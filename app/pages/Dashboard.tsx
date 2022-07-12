@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 // --- React Methods
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // --Components
@@ -18,6 +18,7 @@ import {
   ModalBody,
   ModalFooter,
   Button,
+  Checkbox,
 } from "@chakra-ui/react";
 
 import { CeramicContext } from "../context/ceramicContext";
@@ -29,6 +30,7 @@ import { EthereumAuthProvider } from "@self.id/web";
 export default function Dashboard() {
   const { wallet, handleConnection } = useContext(UserContext);
   const { passport, isLoadingPassport } = useContext(CeramicContext);
+  const [submitPassportCheck, setSubmitPassportCheck] = useState(false);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -36,6 +38,11 @@ export default function Dashboard() {
 
   const [viewerConnection, ceramicConnect] = useViewerConnection();
   const { isOpen: retryModalIsOpen, onOpen: onRetryModalOpen, onClose: onRetryModalClose } = useDisclosure();
+  const {
+    isOpen: submitPassportModalIsOpen,
+    onOpen: submitPassportModalOpen,
+    onClose: submitPassportModalClose,
+  } = useDisclosure();
 
   // Route user to home when wallet is disconnected
   useEffect(() => {
@@ -65,6 +72,47 @@ export default function Dashboard() {
       onRetryModalOpen();
     }
   }, [isLoadingPassport]);
+
+  const submitPassportModal = (
+    <Modal isOpen={submitPassportModalIsOpen} onClose={submitPassportModalClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalBody>
+          <div className="flex flex-col items-center p-4 text-center">
+            <div className="mb-5 inline-flex items-center justify-center text-indigo-500">
+              <img className="object-center" alt="shield-exclamation-icon" src="./assets/circle-check-icon.svg" />
+            </div>
+            <div className="flex-grow">
+              <h2 className="title-font mb-3 text-lg font-medium text-gray-900">
+                Don’t forget to submit your Passport!
+              </h2>
+              <p className="text-base leading-relaxed">
+                When you add stamps to your Passport, you need to submit the updated Passport to an application (e.g.,
+                Gitcoin Grants).
+              </p>
+              <Checkbox
+                mt={5}
+                isChecked={submitPassportCheck}
+                onChange={() => setSubmitPassportCheck(!submitPassportCheck)}
+              >
+                Don’t show this message again.
+              </Checkbox>
+            </div>
+          </div>
+        </ModalBody>
+        <ModalFooter>
+          <Button width="50%" data-testid="submit-passport-become-partner" mr={2} variant="outline">
+            <a href="https://forms.gle/ATkgtsVjKHmjY98h7" target="_blank" rel="noopener noreferrer">
+              Become a partner
+            </a>
+          </Button>
+          <Button width="50%" data-testid="submit-passport-become-return" colorScheme="purple">
+            Return
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  );
 
   const retryModal = (
     <Modal isOpen={retryModalIsOpen} onClose={onRetryModalClose}>
@@ -126,6 +174,7 @@ export default function Dashboard() {
       <div className="flex w-full flex-wrap-reverse px-2 md:mt-4 md:flex-wrap md:px-10">
         <div className="md:w-3/4">
           <p className="mb-4 text-2xl text-black">My Stamps</p>
+          <button onClick={submitPassportModalOpen}>open it</button>
           <p className="text-xl text-black">
             Select the decentralized identity verification stamps you&apos;d like to connect to.
           </p>
@@ -150,6 +199,7 @@ export default function Dashboard() {
           </div>
         )}
         <div className="w-full md:w-1/4">
+          {submitPassportModal}
           {isLoadingPassport == undefined && retryModal}
           {viewerConnection.status !== "connecting" &&
             (passport ? (
